@@ -1,9 +1,9 @@
-import view.salesInvoiceUI;
+import view.SalesInvoiceUI;
 
 public class Main {
     public static void main(String[] args) {
 
-        salesInvoiceUI frame= new salesInvoiceUI("Sales Invoices");
+        SalesInvoiceUI frame= new SalesInvoiceUI("Sales Invoices");
         frame.setVisible(true);
     }
 }
