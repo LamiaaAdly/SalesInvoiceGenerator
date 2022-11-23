@@ -27,16 +27,16 @@ public class SalesInvoiceUI extends JFrame implements ActionListener {
     private JTable invoiceItems;
     private String[] invoicesTableHeaders;
     private String[] invoiceItemsHeaders;
-    private int invoicesTableRowSelected;
+    private int invoicesTableRowSelected, itemSelected;
     private String inveoicePath, invoiceDirectory, fileNameOfInvoices;
     private String itemPath;
-    private ArrayList<InvoiceHeader> invoicesTableData;
+    private ArrayList<InvoiceHeader> invoices;
     private ArrayList<InvoiceLine> items;
     private InvoiceHeaderModel invoicesModel;
     private InvoiceLineModel itemsModel;
     private JScrollPane invoiceScrollPane, itemScrollPane;
     private JButton createInvoice, deleteInvoice;
-    private JButton saveChanges, cancelChanges;
+    private JButton createItem, deleteItem;
     private JTextField invoiceDate,customerName, invoiceNo,invoiceTotal;
 
     public SalesInvoiceUI(String title) {
@@ -76,10 +76,10 @@ public class SalesInvoiceUI extends JFrame implements ActionListener {
         invoiceDirectory = paths[1];
         fileNameOfInvoices = paths[2];
 
-        invoicesTableData = FileOperations.readFile(inveoicePath);
+        invoices = FileOperations.readFile(inveoicePath);
 
         invoicesTable = new JTable();
-        invoicesModel =new InvoiceHeaderModel(invoicesTableData, invoicesTableHeaders);
+        invoicesModel =new InvoiceHeaderModel(invoices, invoicesTableHeaders);
         invoicesTable.setModel(invoicesModel);
         invoicesTable.setCellSelectionEnabled(true);
         invoicesTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -89,25 +89,12 @@ public class SalesInvoiceUI extends JFrame implements ActionListener {
         invoiceScrollPane.setViewportView(invoicesTable);
 
         //Add Selection Listener to Invoice Table
+//        invoicesTableRowSelected =0;
+//        itializeItemsTable();
         invoicesTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                items = new ArrayList<>();
-                invoicesTableRowSelected = invoicesTable.getSelectedRow();
-                if(invoicesTableRowSelected < 0)
-                    invoicesTableRowSelected = invoicesModel.invoiceList.size()-1;
-                if(invoicesTableRowSelected < invoicesTableData.size()) {
-                    invoiceNo.setText(String.valueOf(invoicesModel.getValueAt(invoicesTableRowSelected,0)));
-                    invoiceDate.setText(String.valueOf(invoicesModel.getValueAt(invoicesTableRowSelected,1)));
-                    customerName.setText(String.valueOf(invoicesModel.getValueAt(invoicesTableRowSelected,2)));
-
-                    String brePath = invoiceDirectory.replace("\\InvoiceHeader","\\InvoiceLines");
-                    itemPath = brePath + "\\" + String.valueOf(invoicesModel.getValueAt(invoicesTableRowSelected,0)) + ".csv";
-
-                    items = FileOperations.readInvoiceLineFile(itemPath);
-
-                    createInvoiceItemsTable(items);
-                }
+                itializeItemsTable();
             }
         });
 
@@ -171,7 +158,6 @@ public class SalesInvoiceUI extends JFrame implements ActionListener {
         panel4.add(new JLabel("Total:"));
         invoiceTotal = new JTextField(15);
         invoiceTotal.setEnabled(false);
-        double total=0;
         panel4.add(invoiceTotal);
         itemForm.add(panel4);
 
@@ -191,15 +177,15 @@ public class SalesInvoiceUI extends JFrame implements ActionListener {
         rightSection.add(rightSectionChild, BorderLayout.NORTH);
 
         southBtnPanel2 = new JPanel();
-        saveChanges = new JButton("Save Changes");
-        saveChanges.setActionCommand("saveChanges");
-        saveChanges.addActionListener(this);
-        southBtnPanel2.add(saveChanges);
+        createItem = new JButton("Create Item");
+        createItem.setActionCommand("createItem");
+        createItem.addActionListener(this);
+        southBtnPanel2.add(createItem);
 
-        cancelChanges = new JButton("Cancel Changes");
-        cancelChanges.setActionCommand("cancelChanges");
-        cancelChanges.addActionListener(this);
-        southBtnPanel2.add(cancelChanges);
+        deleteItem = new JButton("Delete Item");
+        deleteItem.setActionCommand("deleteItem");
+        deleteItem.addActionListener(this);
+        southBtnPanel2.add(deleteItem);
         rightSection.add(southBtnPanel2, BorderLayout.SOUTH);
 
         add(rightSection);
@@ -213,39 +199,46 @@ public class SalesInvoiceUI extends JFrame implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        InvoiceController controller = new InvoiceController(invoices, invoicesModel,items,itemsModel,this);
 
         switch (e.getActionCommand()) {
             case "L":
-                InvoiceController.loadFile(this,invoicesTable);
+                InvoiceController.loadFile(invoicesTable);
                 break;
             case "S":
-                InvoiceController.saveFile(this, invoicesTableData);
+                InvoiceController.saveFile();
                 break;
-            case "saveChanges":
-                InvoiceController.saveChanges(Integer.valueOf(invoiceNo.getText()),invoicesTableRowSelected,invoicesModel,itemsModel);
+            case "createItem":
+                InvoiceController.createItem();
                 break;
-            case "cancelChanges":
-                InvoiceController.cancelChanges();
+            case "deleteItem":
+                InvoiceController.deleteItem(itemSelected);
                 createInvoiceItemsTable(items);
                 break;
             case "createInvoice":
                 if(invoicesTable.isRowSelected(invoicesTableRowSelected)) {
                     invoicesTable.clearSelection();
                 }
-                InvoiceController.createInvoice(invoicesModel, invoiceItems);
+                InvoiceController.createInvoice(invoicesTable,invoiceItems,invoicesTableRowSelected);
                 int newInvoiceNo = (int)invoicesModel.getValueAt(invoicesModel.invoiceList.size()-1,0) +1;
 
                 invoiceNo.setText(String.valueOf(newInvoiceNo));
                 customerName.setText(" ");
                 invoiceDate.setText(" ");
                 invoiceTotal.setText(" ");
+
+                ArrayList<InvoiceLine> emptyItems = new ArrayList<>();
+                itemsModel  =
+                        new InvoiceLineModel(emptyItems, invoiceItemsHeaders);
+                if(invoiceItems == null)
+                    invoiceItems = new JTable();
+                invoiceItems.setModel(itemsModel);
+
+
                 break;
             case "deleteInvoice":
-                InvoiceController.deleteInvoice(invoicesTableRowSelected, invoicesModel);
+                InvoiceController.deleteInvoice(invoicesTableRowSelected);
                 break;
-//            case "addItem":
-//                addItem();
-//                break;
         }
     }
 
@@ -253,8 +246,40 @@ public class SalesInvoiceUI extends JFrame implements ActionListener {
         invoiceItems = new JTable();
         itemsModel  = new InvoiceLineModel(items, invoiceItemsHeaders);
         invoiceItems.setModel(itemsModel);
+        invoiceItems.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                itemSelected = invoiceItems.getSelectedRow();
+                if (itemSelected < 0)
+                    itemSelected = itemsModel.itemList.size() - 1;
+            }
+        });
         invoiceItems.setCellSelectionEnabled(true);
         invoiceItems.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         itemScrollPane.setViewportView(invoiceItems);
+    }
+
+    public void itializeItemsTable(){
+        items = new ArrayList<>();
+        invoicesTableRowSelected = invoicesTable.getSelectedRow();
+        if(invoicesTableRowSelected < 0)
+//            invoicesTableRowSelected =0;
+            invoicesTableRowSelected = invoicesModel.invoiceList.size()-1;
+        if(invoicesTableRowSelected < invoices.size()) {
+            try {
+                invoiceNo.setText(String.valueOf(invoicesModel.getValueAt(invoicesTableRowSelected,0)));
+            }catch (NullPointerException e){
+                e.printStackTrace();
+            }
+            invoiceDate.setText(String.valueOf(invoicesModel.getValueAt(invoicesTableRowSelected,1)));
+            customerName.setText(String.valueOf(invoicesModel.getValueAt(invoicesTableRowSelected,2)));
+            invoiceTotal.setText(String.valueOf(InvoiceHeader.getInvoiceTotal(items)));
+            String brePath = invoiceDirectory.replace("\\InvoiceHeader","\\InvoiceLines");
+            itemPath = brePath + "\\" + String.valueOf(invoicesModel.getValueAt(invoicesTableRowSelected,0)) + ".csv";
+
+            items = FileOperations.readInvoiceLineFile(itemPath);
+
+            createInvoiceItemsTable(items);
+        }
     }
 }

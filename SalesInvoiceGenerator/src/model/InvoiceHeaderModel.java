@@ -34,6 +34,8 @@ public class InvoiceHeaderModel extends AbstractTableModel {
                 return invoiceList.get(rowIndex).getInvoiceDate();
             case 2:
                 return invoiceList.get(rowIndex).getCustomerName();
+//            case 3:
+//                return invoiceTotal;
 
         }
         return null;

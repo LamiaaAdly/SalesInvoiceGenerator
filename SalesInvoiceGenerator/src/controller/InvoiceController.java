@@ -4,86 +4,146 @@ import model.*;
 import view.SalesInvoiceUI;
 
 import javax.swing.*;
-import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
 
 public class InvoiceController {
-
+    // declaring the variables model and view
+    private static ArrayList<InvoiceHeader> invoices;
+    private static InvoiceHeaderModel invoicesModel;
+    private static ArrayList<InvoiceLine> items;
+    private static InvoiceLineModel invoiceLineModel;
+    private static SalesInvoiceUI view;
     private static String invoicePath, invoiceDirectory,fileNameOfInvoices, itemPath;
-    public static void loadFile(Component context, JTable invoicesTable){
-        ArrayList<InvoiceHeader> invoicesTableData;
-        InvoiceHeaderModel invoicesModel;
 
-        String paths[] = FileOperations.getPaths(context);
+    public InvoiceController(ArrayList<InvoiceHeader> invoices, InvoiceHeaderModel invoiceHeaderModel,
+                             ArrayList<InvoiceLine> items, InvoiceLineModel invoiceLineModel,
+                             SalesInvoiceUI view) {
+        this.invoices = invoices;
+        this.invoicesModel = invoiceHeaderModel;
+        this.items = items;
+        this.invoiceLineModel = invoiceLineModel;
+        this.view = view;
+
+
+    }
+
+    public static void setInvoicePath(String invoicePath) {
+        InvoiceController.invoicePath = invoicePath;
+    }
+
+    public static void setInvoiceDirectory(String invoiceDirectory) {
+        InvoiceController.invoiceDirectory = invoiceDirectory;
+    }
+
+    public static void setFileNameOfInvoices(String fileNameOfInvoices) {
+        InvoiceController.fileNameOfInvoices = fileNameOfInvoices;
+    }
+
+    public static void setItemPath(String itemPath) {
+        InvoiceController.itemPath = itemPath;
+    }
+
+    public void updateView() {
+        //print Data
+    }
+
+    public static void loadFile(JTable invoicesTable){
+//        ArrayList<InvoiceHeader> invoicesTableData = invoices;
+//        InvoiceHeaderModel invoicesModel;
+        String paths[] = FileOperations.getPaths(view);
         invoicePath = paths[0];
         invoiceDirectory = paths[1];
         fileNameOfInvoices = paths[2];
 
-        invoicesTableData = FileOperations.readFile(invoicePath);
+        invoices = FileOperations.readFile(invoicePath);
 
-        invoicesModel =new InvoiceHeaderModel(invoicesTableData, InvoiceHeader.getParameterNames());
+        invoicesModel =new InvoiceHeaderModel(invoices, InvoiceHeader.getParameterNames());
         invoicesTable.setModel(invoicesModel);
     }
-    public static void saveFile(Component context, ArrayList<InvoiceHeader> list){
+    public static void saveFile(){
 
         JFileChooser fc = new JFileChooser();
         fc.setCurrentDirectory(new File("..\\InvoiceTables\\InvoiceHeader"));
-        int result = fc.showSaveDialog(context);
+        int result = fc.showSaveDialog(view);
         if(result == JFileChooser.APPROVE_OPTION){
             String path = fc.getSelectedFile().getPath();
-            if(list!=null) {
-                FileOperations.writeFile(path, list);
+            if(invoices!=null) {
+                FileOperations.writeFile(path, invoices);
             }
         }
     }
 
-    public static void saveChanges(int invoiceNo,int invoicesTableRowSelected,InvoiceHeaderModel invoiceModel,InvoiceLineModel itemsModel){
-        ArrayList<InvoiceLine> invoicesItems;
-        invoicesItems = itemsModel.itemList;
-//        double sum =0;
-//        for(int i=0;i<itemsModel.list.size();i++) {
-//            sum += Double.valueOf(itemsModel.getValueAt(i, 4).toString());
-//        }
-        String Ivdate = itemsModel.getValueAt(invoiceNo,1).toString();
-        String IvcustomerName = itemsModel.getValueAt(invoiceNo,2).toString();
+    public static void createItem(){//save changes
 
-        String brePath = invoiceDirectory.replace("\\InvoiceHeader","\\InvoiceLines");
-        itemPath = brePath + "\\" + String.valueOf(invoiceModel.getValueAt(invoicesTableRowSelected,0)) + ".csv";
+        invoiceLineModel.itemList.add(new InvoiceLine("", 0.0, 0));
+        invoiceLineModel.fireTableStructureChanged();
 
-        FileOperations.writeInvoiceLineFile(itemPath, invoicesItems);
-        invoiceModel.setValueAt(Ivdate,invoicesTableRowSelected,1);
-        invoiceModel.setValueAt(IvcustomerName,invoicesTableRowSelected,2);
-//        invoiceModel.setValueAt(sum,invoicesTableRowSelected,3);
+//        int ivNum = Integer.valueOf(invoicesModel.getValueAt(invoicesTableRowSelected,0).toString());
+//        String ivDate = invoiceLineModel.getValueAt(ivNum,1).toString();
+//        String ivCustomerName = invoiceLineModel.getValueAt(ivNum,2).toString();
+//
+//        String brePath = invoiceDirectory.replace("\\InvoiceHeader","\\InvoiceLines");
+//        itemPath = brePath + "\\" + String.valueOf(invoicesModel.getValueAt(invoicesTableRowSelected,0)) + ".csv";
+//
+//        FileOperations.writeInvoiceLineFile(itemPath, items);
+//        invoicesModel.setValueAt(ivDate,invoicesTableRowSelected,1);
+//        invoicesModel.setValueAt(ivCustomerName,invoicesTableRowSelected,2);
 
     }
-    public static void cancelChanges(){
+    public static void deleteItem(int itemSelected){// cancel changes
 
-        JOptionPane.showMessageDialog(null, "Changes not saved to Invoice Items Table",
-                "INFORMATION_MESSAGE", JOptionPane.INFORMATION_MESSAGE);
+        if(itemSelected >= 0) {
+            invoiceLineModel.itemList.remove(itemSelected);
+            System.out.println("item No."+ itemSelected +" removed!");
+        }
+        try {
+            items = FileOperations.readInvoiceLineFile(itemPath);
+        }catch (NullPointerException e){
+            e.printStackTrace();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
 
-        ArrayList<InvoiceLine> items = FileOperations.readInvoiceLineFile(itemPath);
+
+//        JOptionPane.showMessageDialog(null, "Changes not saved to Invoice Items Table",
+//                "INFORMATION_MESSAGE", JOptionPane.INFORMATION_MESSAGE);
+//
+//        items = FileOperations.readInvoiceLineFile(itemPath);
 
 
     }
 
-    public static void createInvoice(InvoiceHeaderModel invoiceModel, JTable invoiceItems){
+    public static void createInvoice(JTable invoicesTable,JTable invoiceItems,int invoicesTableRowSelected){
 
-        int newInvoiceNo = (int)invoiceModel.getValueAt(invoiceModel.invoiceList.size()-1,0) +1;
-        String brePath = invoiceDirectory.replace("\\openInvoices","\\invoiceLines");
+        if(invoicesTable.isRowSelected(invoicesTableRowSelected)) {
+            invoicesTable.clearSelection();
+        }
+
+        int newInvoiceNo = (int)invoicesModel.getValueAt(invoicesModel.invoiceList.size()-1,0) +1;
+        String brePath = invoiceDirectory.replace("\\InvoiceHeader","\\invoiceLines");
         itemPath = brePath + "\\" + newInvoiceNo+ ".csv";
         FileOperations.CreateFile(itemPath);
-        invoiceModel.invoiceList.add(new InvoiceHeader(newInvoiceNo, "", ""));
-        invoiceModel.fireTableStructureChanged();
+        invoicesModel.invoiceList.add(new InvoiceHeader(newInvoiceNo, "", ""));
+        invoicesModel.fireTableStructureChanged();
 
-        ArrayList<InvoiceLine> emptyItems = new ArrayList<>();
-        InvoiceLineModel items  = new InvoiceLineModel(emptyItems, InvoiceLine.getParameterNames());
-        if(invoiceItems == null)
-            invoiceItems = new JTable();
-        invoiceItems.setModel(items);
+
+
+//        int newInvoiceNo = (int)invoicesModel.getValueAt(invoicesModel.invoiceList.size()-1,0) +1;
+//        String brePath = invoiceDirectory.replace("\\openInvoices","\\invoiceLines");
+//        itemPath = brePath + "\\" + newInvoiceNo+ ".csv";
+//        FileOperations.CreateFile(itemPath);
+//        invoicesModel.invoiceList.add(new InvoiceHeader(newInvoiceNo, "", ""));
+//        invoicesModel.fireTableStructureChanged();
+//
+//        ArrayList<InvoiceLine> emptyItems = new ArrayList<>();
+//        InvoiceLineModel items  = new InvoiceLineModel(emptyItems, InvoiceLine.getParameterNames());
+//        if(invoiceItems == null)
+//            invoiceItems = new JTable();
+//        invoiceItems.setModel(items);
 
     }
-    public static void deleteInvoice(int invoicesTableRowSelected, InvoiceHeaderModel invoicesModel){
+    public static void deleteInvoice(int invoicesTableRowSelected){
         if(invoicesTableRowSelected >= 0) {
             invoicesModel.invoiceList.remove(invoicesTableRowSelected);
             System.out.println("file removed!");

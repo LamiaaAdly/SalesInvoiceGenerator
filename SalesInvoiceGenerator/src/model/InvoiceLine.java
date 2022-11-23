@@ -8,6 +8,7 @@ public class InvoiceLine {
     private String itemName;
     private double itemPrice;
     private int count;
+    private int invoiceNum;
 
     public InvoiceLine(String itemName, double itemPrice, int count) {
         this.itemName = itemName;
@@ -39,12 +40,21 @@ public class InvoiceLine {
         else System.out.println("Count must be more than 0.");
 
     }
+    public int getInvoiceNum() {
+        return invoiceNum;
+    }
+
+    public void setInvoiceNum(int invoiceNum) {
+        this.invoiceNum = invoiceNum;
+    }
     public static String[] getParameterNames() {
         String[] parameterNames = new String[]{"Item Name",
                                                 "Price",
                                                 "Count"};
         return parameterNames;
     }
+
+
 
     public static double getItemTotal(double price, int count){
         return price*count;

@@ -60,10 +60,11 @@ public class InvoiceHeader {
 
     public static double getInvoiceTotal(ArrayList<InvoiceLine> items){
         double total=0;
-
-        for(int i=0; i<items.size(); i++){
-            total += items.get(i).getItemPrice() *
-                    items.get(i).getCount();
+        if(items != null) {
+            for (int i = 0; i < items.size(); i++) {
+                total += items.get(i).getItemPrice() *
+                        items.get(i).getCount();
+            }
         }
         return total;
     }
