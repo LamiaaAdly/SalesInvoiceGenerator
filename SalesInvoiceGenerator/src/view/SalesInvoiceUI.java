@@ -77,6 +77,7 @@ public class SalesInvoiceUI extends JFrame implements ActionListener {
         fileNameOfInvoices = paths[2];
 
         invoices = FileOperations.readFile(inveoicePath);
+        FileOperations.test(invoices);
 
         invoicesTable = new JTable();
         invoicesModel =new InvoiceHeaderModel(invoices, invoicesTableHeaders);

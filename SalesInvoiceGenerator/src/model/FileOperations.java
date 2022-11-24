@@ -20,9 +20,11 @@ public class FileOperations {
                                                 dataCell[1],
                                                 dataCell[2]));
             }
-        } catch (FileNotFoundException e){
+        }catch (FileNotFoundException e){
             e.printStackTrace();
         }catch (IOException e){
+            e.printStackTrace();
+        }catch (StackOverflowError e){
             e.printStackTrace();
         }finally {
             try{
@@ -182,20 +184,26 @@ public class FileOperations {
         return new String[] {path, parentDirectory, fileName};
     }
 
-    public void test(String invoicePath,String itemPath) {
+    public static void test(ArrayList<InvoiceHeader> invoiceList) {
+        try {
 
-        ArrayList<InvoiceHeader> invoiceList = readFile(invoicePath);
-        ArrayList<InvoiceLine> itemList = readInvoiceLineFile(itemPath);
+            for (int i = 0; i < invoiceList.size()-1; i++) {
+                System.out.println("Invoice" + (i + 1) + "Num\n{");
+                int k = invoiceList.get(0).getInvoiceNum();
+                ArrayList<InvoiceLine> list = invoiceList.get(i).getInvoiceLines(k);
+                int itemLen = list.size();
 
-        for(int i=0; i<invoiceList.size(); i++) {
-            System.out.println("Invoice" + i + "Num\n{");
-            for(int j=0; j<itemList.size(); j++)
-                System.out.println("Invoice"+ i+"Date (" + invoiceList.get(1) +"), Customer"+i+"Name");
-//            Item1Name, Item1Price, Count1
-//            Item2Name, Item2Price, Count2
-//            Item3Name, Item3Price, Count3
+                for (int j = 0; j < itemLen-1; j++) {
+                    System.out.println("Invoice" + i + "Date (" + invoiceList.get(1) + "), Customer" + i + "Name");
+                    System.out.println("Item" + (j + 1) + "Name " + list.get(i).getItemName() +
+                            ", Item" + (j + 1) + "Price " + list.get(i).getItemPrice() +
+                            ", Count " + list.get(i).getCount());
+                }
 
-            System.out.println("}");
+                System.out.println("}");
+            }
+        }catch (IndexOutOfBoundsException e){
+            e.printStackTrace();
         }
 
     }
