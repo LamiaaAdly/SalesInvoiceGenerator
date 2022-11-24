@@ -74,18 +74,17 @@ public class InvoiceController {
         }
     }
 
-    public static void createItem(){//save changes
+    public static void createItem(int invoiceNum){//save changes
 
-        invoiceLineModel.itemList.add(new InvoiceLine("", 0.0, 0));
+        invoiceLineModel.itemList.add(new InvoiceLine(invoiceNum,"", 0.0, 0));
         invoiceLineModel.fireTableStructureChanged();
 
 //        int ivNum = Integer.valueOf(invoicesModel.getValueAt(invoicesTableRowSelected,0).toString());
 //        String ivDate = invoiceLineModel.getValueAt(ivNum,1).toString();
 //        String ivCustomerName = invoiceLineModel.getValueAt(ivNum,2).toString();
 //
-//        String brePath = invoiceDirectory.replace("\\InvoiceHeader","\\InvoiceLines");
+//        String brePath = invoiceDirectory+"\\" + fileNameOfInvoices;
 //        itemPath = brePath + "\\" + String.valueOf(invoicesModel.getValueAt(invoicesTableRowSelected,0)) + ".csv";
-//
 //        FileOperations.writeInvoiceLineFile(itemPath, items);
 //        invoicesModel.setValueAt(ivDate,invoicesTableRowSelected,1);
 //        invoicesModel.setValueAt(ivCustomerName,invoicesTableRowSelected,2);
@@ -119,10 +118,12 @@ public class InvoiceController {
         if(invoicesTable.isRowSelected(invoicesTableRowSelected)) {
             invoicesTable.clearSelection();
         }
+        int newInvoiceNo = (int) invoicesModel.getValueAt(invoicesModel.invoiceList.size() - 1, 0) + 1;
 
-        int newInvoiceNo = (int)invoicesModel.getValueAt(invoicesModel.invoiceList.size()-1,0) +1;
-        String brePath = invoiceDirectory.replace("\\InvoiceHeader","\\invoiceLines");
-        itemPath = brePath + "\\" + newInvoiceNo+ ".csv";
+        if(fileNameOfInvoices!=null) {
+            String brePath = invoiceDirectory + "\\" + fileNameOfInvoices.replace(".csv", "");
+            itemPath = brePath + "\\" + newInvoiceNo + ".csv";
+        }
         FileOperations.CreateFile(itemPath);
         invoicesModel.invoiceList.add(new InvoiceHeader(newInvoiceNo, "", ""));
         invoicesModel.fireTableStructureChanged();
@@ -130,7 +131,7 @@ public class InvoiceController {
 
 
 //        int newInvoiceNo = (int)invoicesModel.getValueAt(invoicesModel.invoiceList.size()-1,0) +1;
-//        String brePath = invoiceDirectory.replace("\\openInvoices","\\invoiceLines");
+//        String brePath = invoiceDirectory+"\\" + fileNameOfInvoices;*
 //        itemPath = brePath + "\\" + newInvoiceNo+ ".csv";
 //        FileOperations.CreateFile(itemPath);
 //        invoicesModel.invoiceList.add(new InvoiceHeader(newInvoiceNo, "", ""));
@@ -146,9 +147,10 @@ public class InvoiceController {
     public static void deleteInvoice(int invoicesTableRowSelected){
         if(invoicesTableRowSelected >= 0) {
             invoicesModel.invoiceList.remove(invoicesTableRowSelected);
-            System.out.println("file removed!");
+            System.out.println(fileNameOfInvoices+" file removed!");
         }
-        String invoPath = invoiceDirectory.replace("\\invoices","\\InvoiceHeader") + fileNameOfInvoices +".csv";
+        System.out.println(invoiceDirectory);
+        String invoPath = invoiceDirectory + fileNameOfInvoices;
         FileOperations.readFile(invoPath);
     }
 

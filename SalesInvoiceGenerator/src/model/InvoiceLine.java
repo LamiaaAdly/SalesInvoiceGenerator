@@ -4,16 +4,33 @@ import javax.swing.*;
 import java.lang.reflect.Field;
 
 public class InvoiceLine {
-
+    private int itemNum =0;
+    private double itemTotal;
     private String itemName;
     private double itemPrice;
     private int count;
     private int invoiceNum;
+    InvoiceHeader invoiceHeader;
 
-    public InvoiceLine(String itemName, double itemPrice, int count) {
+    public InvoiceLine(int invoiceNum,String itemName, double itemPrice, int count) {
+//        invoiceNum = invoiceHeader.getInvoiceNum();
+        this.itemNum = getItemNum();
         this.itemName = itemName;
         this.itemPrice = itemPrice;
         this.count = count;
+        this.itemTotal = getItemTotal();
+        itemNum++;
+    }
+
+    public InvoiceHeader getInvoiceHeader() {
+        return invoiceHeader;
+    }
+
+    public void setInvoiceHeader(InvoiceHeader invoiceHeader){
+        this.invoiceHeader = invoiceHeader;
+        if(!invoiceHeader.getInvoiceLines(invoiceNum).contains(this)){
+            invoiceHeader.getInvoiceLines(invoiceNum).add(this);
+        }
     }
 
     public String getItemName() {
@@ -41,6 +58,7 @@ public class InvoiceLine {
 
     }
     public int getInvoiceNum() {
+        invoiceNum = invoiceHeader.getInvoiceNum();
         return invoiceNum;
     }
 
@@ -48,15 +66,26 @@ public class InvoiceLine {
         this.invoiceNum = invoiceNum;
     }
     public static String[] getParameterNames() {
-        String[] parameterNames = new String[]{"Item Name",
+        String[] parameterNames = new String[]{"Item Num",
+//                                                "Invoice Num",
+                                                "Item Name",
                                                 "Price",
-                                                "Count"};
+                                                "Count",
+                                                "Item Total"};
         return parameterNames;
     }
 
-
-
-    public static double getItemTotal(double price, int count){
-        return price*count;
+    public int getItemNum() {
+        return itemNum;
     }
+
+    public double getItemTotal() {
+        double total = getItemPrice() * getCount();
+        return total;
+    }
+
+
+//    public static double getItemTotal(double price, int count){
+//        return price*count;
+//    }
 }

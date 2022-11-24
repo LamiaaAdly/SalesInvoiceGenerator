@@ -6,73 +6,6 @@ import java.util.ArrayList;
 
 public class FileOperations {
 
-//    public static ArrayList<InvoiceHeader> readAllFiles(Component context){
-//        ArrayList<InvoiceHeader> invoices = new ArrayList<>();
-//        ArrayList<InvoiceLine> items = new ArrayList<>();
-//
-//        JFileChooser fc = new JFileChooser();
-//        fc.setCurrentDirectory(new File("..\\InvoiceTables\\InvoiceHeader"));
-//        int result = fc.showOpenDialog(context);
-//        if(result == JFileChooser.APPROVE_OPTION) {
-//            String invoicePath = fc.getSelectedFile().getPath();
-//            FileInputStream fis1 = null;
-//
-//            try {
-//                fis1 = new FileInputStream(invoicePath);
-//                BufferedReader reader = new BufferedReader(new InputStreamReader(fis1));
-//                while (reader.ready()) {
-//                    String line = reader.readLine();
-//                    String[] dataCell = line.split(",");
-//                    invoices.add(new InvoiceHeader(Integer.valueOf(dataCell[0]),
-//                            dataCell[1],
-//                            dataCell[2]));
-//                }
-//            } catch (FileNotFoundException e) {
-//                e.printStackTrace();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            } finally {
-//                try {
-//                    if (fis1 != null) {
-//                        fis1.close();
-//                    }
-//                } catch (IOException e) {
-//                }
-//            }
-//        }
-//        JFileChooser fc2 = new JFileChooser();
-//        fc.setCurrentDirectory(new File("..\\InvoiceTables\\InvoiceLines"));
-//        int result2 = fc2.showOpenDialog(context);
-//        if(result2 == JFileChooser.APPROVE_OPTION) {
-//            String itemPath = fc2.getSelectedFile().getPath();
-//            FileInputStream fis2 = null;
-//            try {
-//                fis2 = new FileInputStream(itemPath);
-//                BufferedReader reader2 = new BufferedReader(new InputStreamReader(fis2));
-//                while (reader2.ready()) {
-//                    String line = reader2.readLine();
-//                    String[] dataCell = line.split(",");
-//                    items.add(new InvoiceLine(dataCell[0],
-//                            Double.parseDouble(dataCell[1]),
-//                            Integer.valueOf(dataCell[2])));
-//                }
-//            } catch (FileNotFoundException e) {
-//                e.printStackTrace();
-//            } catch (NullPointerException e) {
-//                e.printStackTrace();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            } finally {
-//                try {
-//                    if (fis2 != null) {
-//                        fis2.close();
-//                    }
-//                } catch (IOException e) {
-//                }
-//            }
-//        }
-//        return invoices;
-//    }
     public static ArrayList<InvoiceHeader> readFile(String path){
         ArrayList<InvoiceHeader> invoices = new ArrayList<>();
 
@@ -84,8 +17,8 @@ public class FileOperations {
                 String line = reader.readLine();
                 String[] dataCell = line.split(",");
                 invoices.add(new InvoiceHeader(Integer.valueOf(dataCell[0]),
-                        dataCell[1],
-                        dataCell[2]));
+                                                dataCell[1],
+                                                dataCell[2]));
             }
         } catch (FileNotFoundException e){
             e.printStackTrace();
@@ -124,6 +57,22 @@ public class FileOperations {
             byte[] b = data.getBytes();
             fos.write(b);
 
+            int itemLen;
+            for(int i = 0; i< list.size(); i++){
+                int k = list.get(0).getInvoiceNum();
+                itemLen = list.get(i).getInvoiceLines(k).size();
+//                for(int j = 0; j < itemLen; j++){
+                    ArrayList<InvoiceLine> items = list.get(i).getInvoiceLines(k);
+                    String brePath = "..\\InvoiceTables\\InvoiceHeader" + "\\" + "invoiceHeader";
+                    String itemPath = brePath +"\\"+ k+ ".csv";
+                    writeInvoiceLineFile(itemPath, items);
+//                }
+            }
+
+
+
+        }catch (IndexOutOfBoundsException e){
+            e.printStackTrace();
         }catch (FileNotFoundException e){
             e.printStackTrace();
         }catch (IOException e){
@@ -133,7 +82,6 @@ public class FileOperations {
                 fos.close();
             }catch (IOException e){}
         }
-
 
     }
 
@@ -147,11 +95,12 @@ public class FileOperations {
             while(reader.ready()) {
                 String line = reader.readLine();
                 String[] dataCell = line.split(",");
-                items.add(new InvoiceLine(dataCell[0],
-                        Double.parseDouble(dataCell[1]),
-                        Integer.valueOf(dataCell[2])));
+                items.add(new InvoiceLine(Integer.valueOf(dataCell[0]),
+                        dataCell[1],
+                        Double.parseDouble(dataCell[2]),
+                        Integer.valueOf(dataCell[3])));
             }
-        } catch (FileNotFoundException e){
+        }catch (FileNotFoundException e){
             e.printStackTrace();
         }catch (IOException e){
             e.printStackTrace();
@@ -209,7 +158,9 @@ public class FileOperations {
             } else {
                 System.out.println("File already exists.");
             }
-        } catch (IOException e) {
+        } catch (NullPointerException e){
+            e.printStackTrace();
+        }catch (IOException e) {
             System.out.println("An error occurred.");
             e.printStackTrace();
         }

@@ -209,7 +209,7 @@ public class SalesInvoiceUI extends JFrame implements ActionListener {
                 InvoiceController.saveFile();
                 break;
             case "createItem":
-                InvoiceController.createItem();
+                InvoiceController.createItem(invoicesTableRowSelected);
                 break;
             case "deleteItem":
                 InvoiceController.deleteItem(itemSelected);
@@ -271,15 +271,16 @@ public class SalesInvoiceUI extends JFrame implements ActionListener {
             }catch (NullPointerException e){
                 e.printStackTrace();
             }
-            invoiceDate.setText(String.valueOf(invoicesModel.getValueAt(invoicesTableRowSelected,1)));
-            customerName.setText(String.valueOf(invoicesModel.getValueAt(invoicesTableRowSelected,2)));
-            invoiceTotal.setText(String.valueOf(InvoiceHeader.getInvoiceTotal(items)));
-            String brePath = invoiceDirectory.replace("\\InvoiceHeader","\\InvoiceLines");
+
+            String brePath = invoiceDirectory+"\\" + fileNameOfInvoices.replace(".csv","");
             itemPath = brePath + "\\" + String.valueOf(invoicesModel.getValueAt(invoicesTableRowSelected,0)) + ".csv";
 
             items = FileOperations.readInvoiceLineFile(itemPath);
 
             createInvoiceItemsTable(items);
+            invoiceDate.setText(String.valueOf(invoicesModel.getValueAt(invoicesTableRowSelected,1)));
+            customerName.setText(String.valueOf(invoicesModel.getValueAt(invoicesTableRowSelected,2)));
+            invoiceTotal.setText(String.valueOf(InvoiceHeader.getInvoiceTotal(items)));
         }
     }
 }

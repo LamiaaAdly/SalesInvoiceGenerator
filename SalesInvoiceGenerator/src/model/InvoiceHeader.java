@@ -9,14 +9,15 @@ public class InvoiceHeader {
     private int invoiceNum;
     private String invoiceDate;
     private String customerName;
-
     ArrayList<InvoiceLine> invoiceLines;
 
     public InvoiceHeader(int invoiceNum, String invoiceDate, String customerName){
         this.invoiceNum = invoiceNum;
         this.customerName = customerName;
         this.invoiceDate = invoiceDate;
+        this.invoiceLines = getInvoiceLines(invoiceNum);
     }
+    public InvoiceHeader(){}
 
 
     public int getInvoiceNum() {
@@ -43,8 +44,24 @@ public class InvoiceHeader {
         this.customerName = customerName;
     }
 
-    public ArrayList<InvoiceLine> getInvoiceLines() {
+    public ArrayList<InvoiceLine> getInvoiceLines(int invoiceNum) {
+        if(invoiceLines ==null){
+            invoiceLines = new ArrayList<>();
+        }
+
+        String brePath = "..\\InvoiceTables\\InvoiceHeader" + "\\" + "invoiceHeader";
+        String itemPath = brePath +"\\"+ getInvoiceNum()+ ".csv";
+
+        invoiceLines = FileOperations.readInvoiceLineFile(itemPath);
+
         return invoiceLines;
+    }
+
+    public void addInvoiceLine(InvoiceLine invoiceLine){
+        this.invoiceLines.add(invoiceLine);
+        if (invoiceLine.getInvoiceHeader() !=this){
+            invoiceLine.setInvoiceHeader(this);
+        }
     }
 
     public void setInvoiceLines(ArrayList<InvoiceLine> invoiceLines) {
@@ -54,7 +71,8 @@ public class InvoiceHeader {
     public static String[] getParameterNames() {
         String[] parameterNames = new String[]{"Invoice Num",
                                                 "Invoice Date",
-                                                "Customer Name"};
+                                                "Customer Name",
+                                                "Total"};
         return parameterNames;
     }
 
