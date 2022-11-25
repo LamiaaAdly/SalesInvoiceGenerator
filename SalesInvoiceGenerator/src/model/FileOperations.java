@@ -194,7 +194,9 @@ public class FileOperations {
                 int itemLen = list.size();
 
                 for (int j = 0; j < itemLen-1; j++) {
-                    System.out.println("Invoice" + i + "Date (" + invoiceList.get(1) + "), Customer" + i + "Name");
+                    System.out.println("Invoice " + invoiceList.get(i).getInvoiceNum() +
+                            "Date (" + invoiceList.get(i).getInvoiceDate() +
+                            "), Customer" + invoiceList.get(i).getInvoiceNum() + "Name " + invoiceList.get(i).getCustomerName());
                     System.out.println("Item" + (j + 1) + "Name " + list.get(i).getItemName() +
                             ", Item" + (j + 1) + "Price " + list.get(i).getItemPrice() +
                             ", Count " + list.get(i).getCount());
