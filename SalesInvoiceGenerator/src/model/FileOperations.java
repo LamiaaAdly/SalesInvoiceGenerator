@@ -42,14 +42,23 @@ public class FileOperations {
             fos = new FileOutputStream(path);
 
             int nRow = list.size();
-            int nCol = InvoiceHeader.getParameterNames().length;
+            int nCol = InvoiceHeader.getParameterNames().length-1;
             String data = "";
 
             //write row information
             for (int i = 0 ; i < nRow ; i++){
                 for (int j = 0 ; j < nCol ; j++){
-                    data += String.valueOf(list.get(i+j));
-
+                    switch (j){
+                        case 0:
+                            data += String.valueOf(list.get(i).getInvoiceNum());
+                            break;
+                        case 1:
+                            data += String.valueOf(list.get(i).getInvoiceDate());
+                            break;
+                        case 2:
+                            data += String.valueOf(list.get(i).getCustomerName());
+                            break;
+                    }
                     if(j==nCol-1) data=data.replace("\r","");
                     if (j!=nCol-1) data += ",";
                 }
@@ -67,6 +76,7 @@ public class FileOperations {
                     ArrayList<InvoiceLine> items = list.get(i).getInvoiceLines(k);
                     String brePath = "..\\InvoiceTables\\InvoiceHeader" + "\\" + "invoiceHeader";
                     String itemPath = brePath +"\\"+ k+ ".csv";
+                    CreateFile(itemPath);
                     writeInvoiceLineFile(itemPath, items);
 //                }
             }
@@ -102,6 +112,8 @@ public class FileOperations {
                         Double.parseDouble(dataCell[2]),
                         Integer.valueOf(dataCell[3])));
             }
+        }catch (NullPointerException e){
+            e.printStackTrace();
         }catch (FileNotFoundException e){
             e.printStackTrace();
         }catch (IOException e){
@@ -123,13 +135,26 @@ public class FileOperations {
             fos = new FileOutputStream(path);
 
             int nRow = list.size();
-            int nCol = InvoiceHeader.getParameterNames().length;
+            int nCol = InvoiceLine.getParameterNames().length -1;
             String data = "";
 
             //write row information
             for (int i = 0 ; i < nRow ; i++){
                 for (int j = 0 ; j < nCol ; j++){
-                    data += String.valueOf(list.get(i+j));
+                    switch (j){
+                        case 0:
+                            data += String.valueOf(list.get(i).getInvoiceNum());
+                            break;
+                        case 1:
+                            data += String.valueOf(list.get(i).getItemName());
+                            break;
+                        case 2:
+                            data += String.valueOf(list.get(i).getItemPrice());
+                            break;
+                        case 3:
+                            data += String.valueOf(list.get(i).getCount());
+                            break;
+                    }
 
                     if(j==nCol-1) data=data.replace("\r","");
                     if (j!=nCol-1) data += ",";
@@ -188,7 +213,7 @@ public class FileOperations {
         try {
 
             for (int i = 0; i < invoiceList.size()-1; i++) {
-                System.out.println("Invoice" + (i + 1) + "Num\n{");
+                System.out.println("Invoice" + invoiceList.get(i).getInvoiceNum()+ "Num\n{");
                 int k = invoiceList.get(0).getInvoiceNum();
                 ArrayList<InvoiceLine> list = invoiceList.get(i).getInvoiceLines(k);
                 int itemLen = list.size();

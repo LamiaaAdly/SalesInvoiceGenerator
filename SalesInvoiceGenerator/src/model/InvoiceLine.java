@@ -4,7 +4,7 @@ import javax.swing.*;
 import java.lang.reflect.Field;
 
 public class InvoiceLine {
-    private int itemNum =0;
+    private int itemNum;
     private double itemTotal;
     private String itemName;
     private double itemPrice;
@@ -76,6 +76,8 @@ public class InvoiceLine {
     }
 
     public int getItemNum() {
+//        if(this.invoiceNum == invoiceNum){itemNum++;}
+//        else itemNum =1;
         return itemNum;
     }
 
