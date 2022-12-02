@@ -6,7 +6,7 @@ import java.util.ArrayList;
 public class InvoiceHeaderModel extends AbstractTableModel {
     public ArrayList<InvoiceHeader> invoiceList;
     String[] headers;
-    private double invoiceTotal;
+
 
     public InvoiceHeaderModel(ArrayList<InvoiceHeader> list, String[] headers){
         this.invoiceList = list;
@@ -35,9 +35,9 @@ public class InvoiceHeaderModel extends AbstractTableModel {
             case 2:
                 return invoiceList.get(rowIndex).getCustomerName();
             case 3:
-                ArrayList<InvoiceLine> items = invoiceList.get(rowIndex).getInvoiceLines(invoiceList.get(rowIndex).getInvoiceNum());
+                ArrayList<InvoiceLine> items;
+                items = invoiceList.get(rowIndex).getInvoiceLines(invoiceList.get(rowIndex).getInvoiceNum());
                 return InvoiceHeader.getInvoiceTotal(items);
-
         }
         return null;
     }
@@ -61,10 +61,10 @@ public class InvoiceHeaderModel extends AbstractTableModel {
                 item.setInvoiceNum(Integer.valueOf(Value));
                 break;
             case 1:
-                item.setInvoiceDate( Value);
+                item.setInvoiceDate(Value);
                 break;
             case 2:
-                item.setCustomerName((Value));
+                item.setCustomerName(Value);
                 break;
 
         }

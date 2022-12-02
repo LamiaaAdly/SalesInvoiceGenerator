@@ -28,7 +28,7 @@ public class SalesInvoiceUI extends JFrame implements ActionListener {
     private String[] invoicesTableHeaders;
     private String[] invoiceItemsHeaders;
     private int invoicesTableRowSelected, itemSelected;
-    private String inveoicePath, invoiceDirectory, fileNameOfInvoices;
+    private String invoicePath, invoiceDirectory, fileNameOfInvoices;
     private String itemPath;
     private ArrayList<InvoiceHeader> invoices;
     private ArrayList<InvoiceLine> items;
@@ -72,12 +72,16 @@ public class SalesInvoiceUI extends JFrame implements ActionListener {
         invoicesTableHeaders = InvoiceHeader.getParameterNames();
 
         String[] paths = FileOperations.getPaths(this);
-        inveoicePath = paths[0];
+        invoicePath = paths[0];
         invoiceDirectory = paths[1];
         fileNameOfInvoices = paths[2];
 
-        invoices = FileOperations.readFile(inveoicePath);
-        FileOperations.test(invoices);
+        InvoiceController.setInvoicePath(paths[0]);
+        InvoiceController.setInvoiceDirectory(paths[1]);
+        InvoiceController.setFileNameOfInvoices(paths[2]);
+
+        invoices = FileOperations.readFile(invoicePath);
+        FileOperations.test();
 
         invoicesTable = new JTable();
         invoicesModel =new InvoiceHeaderModel(invoices, invoicesTableHeaders);
@@ -90,21 +94,13 @@ public class SalesInvoiceUI extends JFrame implements ActionListener {
         invoiceScrollPane.setViewportView(invoicesTable);
 
         //Add Selection Listener to Invoice Table
-//        invoicesTableRowSelected =0;
-//        itializeItemsTable();
+
         invoicesTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                itializeItemsTable();
+                initializeItemsTable();
             }
         });
-
-//        DefaultTableModel ivModel = (DefaultTableModel) invoicesTable.getModel();
-//        TableColumn ivTotal = new TableColumn(ivModel.getColumnCount());
-//        ivTotal.setHeaderValue("Total");
-//        invoicesTable.addColumn(ivTotal);
-//        ivModel.addColumn("Total");
-//        invoicesTable.moveColumn(invoicesTable.getColumnCount()-1, 3);
 
         leftSectionChild.add(invoicesTable.getTableHeader());
         leftSectionChild.add(invoiceScrollPane);
@@ -203,30 +199,79 @@ public class SalesInvoiceUI extends JFrame implements ActionListener {
         InvoiceController controller = new InvoiceController(invoices, invoicesModel,items,itemsModel,this);
 
         switch (e.getActionCommand()) {
-            case "L":
+            case "L": //Load
                 InvoiceController.loadFile(invoicesTable);
                 break;
-            case "S":
-                InvoiceController.saveFile();
+            case "S": //Save
+                for(int i=0; i<invoicesModel.invoiceList.size(); i++) {
+                    int k = invoicesModel.invoiceList.get(i).getInvoiceNum(); //InvoiceNum from Invoices
+
+                    int invoNumItem;
+                    if(invoicesTableRowSelected < 0)
+                        invoNumItem = 0;
+                    else
+                        invoNumItem = itemsModel.getInvoiceNum(invoices.get(invoicesTableRowSelected)); // InvoiceNum from itemsModel
+
+                    if(invoNumItem == k){
+                            try {
+                                InvoiceHeader invoice = invoices.get(i);
+                                invoice.setInvoiceLines(itemsModel.itemList);
+                                invoices.set(i, invoice);
+                                invoicesModel.invoiceList.set(i, invoice);
+
+                                if(invoiceDate.getText().isEmpty() || customerName.getText().isEmpty()) {
+                                    System.out.println("Date ot Customer name is empty!");
+                                }
+                                else {
+                                    invoicesModel.setValueAt(invoicesModel.invoiceList.get(i).getInvoiceNum(), i, 0);
+                                    invoicesModel.setValueAt(invoiceDate.getText(), i, 1);
+                                    invoicesModel.setValueAt(customerName.getText(), i, 2);
+                                }
+                                invoicesModel.fireTableDataChanged();
+                            }catch (Exception ex){
+                                System.out.println("error");
+                            }
+                    }
+                    else {
+                        invoicesModel.setValueAt(invoicesModel.invoiceList.get(i).getInvoiceNum(), i, 0);
+                        invoicesModel.setValueAt(invoicesModel.invoiceList.get(i).getInvoiceDate(), i, 1);
+                        invoicesModel.setValueAt(invoicesModel.invoiceList.get(i).getCustomerName(), i, 2);
+                        invoicesModel.setValueAt(invoicesModel.invoiceList.get(i).getInvoiceLines(k), i, 3);
+                    }
+                }
+                InvoiceController.saveFile(invoices, this);
                 break;
             case "createItem":
-                InvoiceController.createItem(invoicesTableRowSelected);
+                String date = invoiceDate.getText();
+                String name = customerName.getText();
+                if(!date.isEmpty() && !name.isEmpty()) {
+                    InvoiceController.createItem(invoicesTableRowSelected);
+
+                    invoicesModel.setValueAt(invoiceNo.getText(), invoicesTableRowSelected,0);
+                    invoicesModel.setValueAt(invoiceDate.getText(), invoicesTableRowSelected, 1);
+                    invoicesModel.setValueAt(customerName.getText(), invoicesTableRowSelected, 2);
+
+                    invoiceTotal.setText(String.valueOf(InvoiceHeader.getInvoiceTotal(items)));
+//                    invoicesModel.fireTableStructureChanged();
+                }
+                else {
+                    JOptionPane.showMessageDialog(null, "Customer Name or Invoice Date is not set. Try again!",
+                            "INFORMATION MESSAGE", JOptionPane.INFORMATION_MESSAGE);
+                }
                 break;
             case "deleteItem":
-                InvoiceController.deleteItem(itemSelected);
+                int invoNum = invoicesModel.invoiceList.get(invoicesTableRowSelected).getInvoiceNum();
+                InvoiceController.deleteItem(invoNum, itemSelected);
                 createInvoiceItemsTable(items);
                 break;
             case "createInvoice":
-                if(invoicesTable.isRowSelected(invoicesTableRowSelected)) {
-                    invoicesTable.clearSelection();
-                }
-                InvoiceController.createInvoice(invoicesTable,invoiceItems,invoicesTableRowSelected);
-                int newInvoiceNo = (int)invoicesModel.getValueAt(invoicesModel.invoiceList.size()-1,0) +1;
+                InvoiceController.createInvoice(invoicesTable,invoicesTableRowSelected);
+                int newInvoiceNo = (int)invoicesModel.getValueAt(invoicesModel.invoiceList.size()-1,0);
 
                 invoiceNo.setText(String.valueOf(newInvoiceNo));
-                customerName.setText(" ");
-                invoiceDate.setText(" ");
-                invoiceTotal.setText(" ");
+                customerName.setText("");
+                invoiceDate.setText("");
+                invoiceTotal.setText("0.00");
 
                 ArrayList<InvoiceLine> emptyItems = new ArrayList<>();
                 itemsModel  =
@@ -234,18 +279,32 @@ public class SalesInvoiceUI extends JFrame implements ActionListener {
                 if(invoiceItems == null)
                     invoiceItems = new JTable();
                 invoiceItems.setModel(itemsModel);
-
-
                 break;
             case "deleteInvoice":
                 InvoiceController.deleteInvoice(invoicesTableRowSelected);
+
+                invoiceNo.setText("");
+                customerName.setText("");
+                invoiceDate.setText("");
+                invoiceTotal.setText("0.00");
+
+                ArrayList<InvoiceLine> emptyItems2 = new ArrayList<>();
+                itemsModel  =
+                        new InvoiceLineModel(emptyItems2, invoiceItemsHeaders);
+                if(invoiceItems == null)
+                    invoiceItems = new JTable();
+                invoiceItems.setModel(itemsModel);
                 break;
         }
     }
 
     public void createInvoiceItemsTable(ArrayList<InvoiceLine> items){
         invoiceItems = new JTable();
+
+        if(items == null)
+            items = new ArrayList<>();
         itemsModel  = new InvoiceLineModel(items, invoiceItemsHeaders);
+
         invoiceItems.setModel(itemsModel);
         invoiceItems.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
@@ -255,17 +314,18 @@ public class SalesInvoiceUI extends JFrame implements ActionListener {
                     itemSelected = itemsModel.itemList.size() - 1;
             }
         });
+
         invoiceItems.setCellSelectionEnabled(true);
         invoiceItems.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         itemScrollPane.setViewportView(invoiceItems);
     }
 
-    public void itializeItemsTable(){
+    public void initializeItemsTable(){
         items = new ArrayList<>();
         invoicesTableRowSelected = invoicesTable.getSelectedRow();
         if(invoicesTableRowSelected < 0)
-//            invoicesTableRowSelected =0;
-            invoicesTableRowSelected = invoicesModel.invoiceList.size()-1;
+            return;
+
         if(invoicesTableRowSelected < invoices.size()) {
             try {
                 invoiceNo.setText(String.valueOf(invoicesModel.getValueAt(invoicesTableRowSelected,0)));
@@ -273,10 +333,7 @@ public class SalesInvoiceUI extends JFrame implements ActionListener {
                 e.printStackTrace();
             }
 
-            String brePath = invoiceDirectory+"\\" + fileNameOfInvoices.replace(".csv","");
-            itemPath = brePath + "\\" + String.valueOf(invoicesModel.getValueAt(invoicesTableRowSelected,0)) + ".csv";
-
-            items = FileOperations.readInvoiceLineFile(itemPath);
+            items = invoices.get(invoicesTableRowSelected).getInvoiceLines(invoices.get(invoicesTableRowSelected).getInvoiceNum());
 
             createInvoiceItemsTable(items);
             invoiceDate.setText(String.valueOf(invoicesModel.getValueAt(invoicesTableRowSelected,1)));

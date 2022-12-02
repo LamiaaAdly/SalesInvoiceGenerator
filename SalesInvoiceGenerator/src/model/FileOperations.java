@@ -1,4 +1,6 @@
 package model;
+import controller.InvoiceController;
+
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
@@ -16,17 +18,18 @@ public class FileOperations {
             while(reader.ready()) {
                 String line = reader.readLine();
                 String[] dataCell = line.split(",");
-                invoices.add(new InvoiceHeader(Integer.valueOf(dataCell[0]),
-                                                dataCell[1],
-                                                dataCell[2]));
+                InvoiceHeader inv = new InvoiceHeader(Integer.valueOf(dataCell[0]),
+                        dataCell[1],
+                        dataCell[2]);
+                String brePath = "..\\InvoiceTables\\InvoiceHeader" + "\\" + InvoiceController.getFileNameOfInvoices().replace(".csv","");
+                String itemPath = brePath +"\\"+ inv.getInvoiceNum()+ ".csv";
+                inv.setInvoiceLines(readInvoiceLineFile(itemPath));
+                invoices.add(inv);
+
             }
-        }catch (FileNotFoundException e){
+        } catch (NullPointerException | IOException | StackOverflowError e){
             e.printStackTrace();
-        }catch (IOException e){
-            e.printStackTrace();
-        }catch (StackOverflowError e){
-            e.printStackTrace();
-        }finally {
+        } finally {
             try{
                 if(fis!=null) {
                     fis.close();
@@ -40,14 +43,15 @@ public class FileOperations {
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(path);
+            fos.flush();
 
             int nRow = list.size();
-            int nCol = InvoiceHeader.getParameterNames().length-1;
+            int nCol = InvoiceHeader.getParameterNames().length;
             String data = "";
 
             //write row information
             for (int i = 0 ; i < nRow ; i++){
-                for (int j = 0 ; j < nCol ; j++){
+                for (int j = 0 ; j < nCol-1 ; j++){
                     switch (j){
                         case 0:
                             data += String.valueOf(list.get(i).getInvoiceNum());
@@ -59,8 +63,8 @@ public class FileOperations {
                             data += String.valueOf(list.get(i).getCustomerName());
                             break;
                     }
-                    if(j==nCol-1) data=data.replace("\r","");
-                    if (j!=nCol-1) data += ",";
+//                    if(j==nCol-1) data=data.replace("\r","");
+                    if (j!=nCol-2) data += ",";
                 }
                 if(i!=nRow-1)data += "\r\n";
             }
@@ -68,28 +72,21 @@ public class FileOperations {
             byte[] b = data.getBytes();
             fos.write(b);
 
-            int itemLen;
+//            int itemLen;
             for(int i = 0; i< list.size(); i++){
-                int k = list.get(0).getInvoiceNum();
-                itemLen = list.get(i).getInvoiceLines(k).size();
-//                for(int j = 0; j < itemLen; j++){
-                    ArrayList<InvoiceLine> items = list.get(i).getInvoiceLines(k);
-                    String brePath = "..\\InvoiceTables\\InvoiceHeader" + "\\" + "invoiceHeader";
-                    String itemPath = brePath +"\\"+ k+ ".csv";
-                    CreateFile(itemPath);
-                    writeInvoiceLineFile(itemPath, items);
-//                }
+                int k = list.get(i).getInvoiceNum();
+//                itemLen = list.get(i).getInvoiceLines(k).size();
+
+                ArrayList<InvoiceLine> items = list.get(i).getInvoiceLines(k);
+                String brePath = "..\\InvoiceTables\\InvoiceHeader" + "\\" + InvoiceController.getFileNameOfInvoices().replace(".csv","");
+                String itemPath = brePath +"\\"+ k+ ".csv";
+                CreateFile(itemPath);
+                writeInvoiceLineFile(itemPath, items);
             }
 
-
-
-        }catch (IndexOutOfBoundsException e){
+        } catch (IndexOutOfBoundsException | IOException e){
             e.printStackTrace();
-        }catch (FileNotFoundException e){
-            e.printStackTrace();
-        }catch (IOException e){
-            e.printStackTrace();
-        }finally {
+        } finally {
             try{
                 fos.close();
             }catch (IOException e){}
@@ -102,6 +99,9 @@ public class FileOperations {
 
         FileInputStream fis = null;
         try {
+            if(path== null){
+                path= InvoiceController.getInvoicePath();
+            }
             fis= new FileInputStream(path);
             BufferedReader reader = new BufferedReader(new InputStreamReader(fis) );
             while(reader.ready()) {
@@ -112,13 +112,9 @@ public class FileOperations {
                         Double.parseDouble(dataCell[2]),
                         Integer.valueOf(dataCell[3])));
             }
-        }catch (NullPointerException e){
+        } catch (NullPointerException | IOException e){
             e.printStackTrace();
-        }catch (FileNotFoundException e){
-            e.printStackTrace();
-        }catch (IOException e){
-            e.printStackTrace();
-        }finally {
+        } finally {
             try{
                 if(fis!=null) {
                     fis.close();
@@ -156,7 +152,7 @@ public class FileOperations {
                             break;
                     }
 
-                    if(j==nCol-1) data=data.replace("\r","");
+//                    if(j==nCol-1) data=data.replace("\r","");
                     if (j!=nCol-1) data += ",";
                 }
                 if(i!=nRow-1)data += "\r\n";
@@ -165,11 +161,9 @@ public class FileOperations {
             byte[] b = data.getBytes();
             fos.write(b);
 
-        }catch (FileNotFoundException e){
+        } catch (NullPointerException | IOException e){
             e.printStackTrace();
-        }catch (IOException e){
-            e.printStackTrace();
-        }finally {
+        } finally {
             try{
                 fos.close();
             }catch (IOException e){}
@@ -185,9 +179,9 @@ public class FileOperations {
             } else {
                 System.out.println("File already exists.");
             }
-        } catch (NullPointerException e){
+        }catch (NullPointerException | FileNotFoundException e){
             e.printStackTrace();
-        }catch (IOException e) {
+        } catch (IOException e) {
             System.out.println("An error occurred.");
             e.printStackTrace();
         }
@@ -209,22 +203,23 @@ public class FileOperations {
         return new String[] {path, parentDirectory, fileName};
     }
 
-    public static void test(ArrayList<InvoiceHeader> invoiceList) {
+    public static void test() {
         try {
+            ArrayList<InvoiceHeader> invoiceList = readFile(InvoiceController.getInvoicePath());
+            for (int i = 0; i < invoiceList.size(); i++) {
+                int invoNo = invoiceList.get(i).getInvoiceNum();
+                System.out.println("Invoice" + invoNo+ "Num\n{");
 
-            for (int i = 0; i < invoiceList.size()-1; i++) {
-                System.out.println("Invoice" + invoiceList.get(i).getInvoiceNum()+ "Num\n{");
-                int k = invoiceList.get(0).getInvoiceNum();
-                ArrayList<InvoiceLine> list = invoiceList.get(i).getInvoiceLines(k);
+                ArrayList<InvoiceLine> list = invoiceList.get(i).getInvoiceLines(invoNo);
                 int itemLen = list.size();
-
-                for (int j = 0; j < itemLen-1; j++) {
-                    System.out.println("Invoice " + invoiceList.get(i).getInvoiceNum() +
-                            "Date (" + invoiceList.get(i).getInvoiceDate() +
-                            "), Customer" + invoiceList.get(i).getInvoiceNum() + "Name " + invoiceList.get(i).getCustomerName());
-                    System.out.println("Item" + (j + 1) + "Name " + list.get(i).getItemName() +
-                            ", Item" + (j + 1) + "Price " + list.get(i).getItemPrice() +
-                            ", Count " + list.get(i).getCount());
+                System.out.println("Invoice " + invoiceList.get(i).getInvoiceNum() +
+                        ", Date (" + invoiceList.get(i).getInvoiceDate() +
+                        "), Customer" + invoiceList.get(i).getInvoiceNum() +
+                        "Name " + invoiceList.get(i).getCustomerName());
+                for (int j = 0; j < itemLen; j++) {
+                    System.out.println("Item" + (j + 1) + ": Name " + list.get(j).getItemName() +
+                            ", Item" + (j + 1) + "Price " + list.get(j).getItemPrice() +
+                            ", Count " + list.get(j).getCount());
                 }
 
                 System.out.println("}");

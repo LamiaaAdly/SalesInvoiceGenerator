@@ -1,25 +1,20 @@
 package model;
 
-import javax.swing.*;
-import java.lang.reflect.Field;
-
 public class InvoiceLine {
-    private int itemNum;
+//    private int itemNum;
     private double itemTotal;
     private String itemName;
     private double itemPrice;
     private int count;
     private int invoiceNum;
-    InvoiceHeader invoiceHeader;
+    private InvoiceHeader invoiceHeader;
 
     public InvoiceLine(int invoiceNum,String itemName, double itemPrice, int count) {
-//        invoiceNum = invoiceHeader.getInvoiceNum();
-        this.itemNum = getItemNum();
+        this.invoiceNum = invoiceNum;
         this.itemName = itemName;
         this.itemPrice = itemPrice;
         this.count = count;
         this.itemTotal = getItemTotal();
-        itemNum++;
     }
 
     public InvoiceHeader getInvoiceHeader() {
@@ -58,7 +53,6 @@ public class InvoiceLine {
 
     }
     public int getInvoiceNum() {
-        invoiceNum = invoiceHeader.getInvoiceNum();
         return invoiceNum;
     }
 
@@ -75,19 +69,8 @@ public class InvoiceLine {
         return parameterNames;
     }
 
-    public int getItemNum() {
-//        if(this.invoiceNum == invoiceNum){itemNum++;}
-//        else itemNum =1;
-        return itemNum;
-    }
-
     public double getItemTotal() {
         double total = getItemPrice() * getCount();
         return total;
     }
-
-
-//    public static double getItemTotal(double price, int count){
-//        return price*count;
-//    }
 }

@@ -7,6 +7,7 @@ public class InvoiceLineModel extends AbstractTableModel {
 
     public ArrayList<InvoiceLine> itemList;
     String[] headers;
+    int invoiceNum;
 
     public InvoiceLineModel(ArrayList<InvoiceLine> list, String[] headers){
         this.itemList = list;
@@ -22,11 +23,16 @@ public class InvoiceLineModel extends AbstractTableModel {
         return headers.length;
     }
 
+    public int getInvoiceNum(InvoiceHeader invoice) {
+        invoiceNum = invoice.getInvoiceNum();
+        return invoiceNum;
+    }
+
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         switch (columnIndex){
             case 0:
-                return itemList.get(rowIndex).getItemNum();
+                return rowIndex+1;
 //            case 1:
 //                return itemList.get(rowIndex).getInvoiceNum();
             case 1:
@@ -55,12 +61,17 @@ public class InvoiceLineModel extends AbstractTableModel {
                 item.setItemName(Value);
                 break;
             case 2:
-                item.setItemPrice(Double.valueOf(Value));
+                try {
+                    item.setItemPrice(Double.valueOf(Value));
+                }
+                catch (NumberFormatException e){e.printStackTrace();}
                 break;
             case 3:
-                item.setCount(Integer.valueOf(Value));
+                try {
+                    item.setCount(Integer.valueOf(Value));
+                }
+                catch (NumberFormatException e){e.printStackTrace();}
                 break;
-
         }
         fireTableCellUpdated(rowIndex, columnIndex);
     }
