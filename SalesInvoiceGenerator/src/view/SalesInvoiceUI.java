@@ -198,6 +198,7 @@ public class SalesInvoiceUI extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         InvoiceController controller = new InvoiceController(invoices, invoicesModel,items,itemsModel,this);
 
+        int ret;
         switch (e.getActionCommand()) {
             case "L": //Load
                 InvoiceController.loadFile(invoicesTable);
@@ -245,7 +246,7 @@ public class SalesInvoiceUI extends JFrame implements ActionListener {
                 String date = invoiceDate.getText();
                 String name = customerName.getText();
                 if(!date.isEmpty() && !name.isEmpty()) {
-                    InvoiceController.createItem(invoicesTableRowSelected);
+                    InvoiceController.createItem(invoices.get(invoicesTableRowSelected).getInvoiceNum());
 
                     invoicesModel.setValueAt(invoiceNo.getText(), invoicesTableRowSelected,0);
                     invoicesModel.setValueAt(invoiceDate.getText(), invoicesTableRowSelected, 1);
@@ -260,6 +261,11 @@ public class SalesInvoiceUI extends JFrame implements ActionListener {
                 }
                 break;
             case "deleteItem":
+                ret = JOptionPane.showConfirmDialog(null, "Are you sure, you want to delete this item?",
+                        "Confirmation MESSAGE",  JOptionPane.OK_CANCEL_OPTION);
+                if(ret != JOptionPane.OK_OPTION)
+                    break;
+
                 int invoNum = invoicesModel.invoiceList.get(invoicesTableRowSelected).getInvoiceNum();
                 InvoiceController.deleteItem(invoNum, itemSelected);
                 createInvoiceItemsTable(items);
@@ -281,6 +287,11 @@ public class SalesInvoiceUI extends JFrame implements ActionListener {
                 invoiceItems.setModel(itemsModel);
                 break;
             case "deleteInvoice":
+                ret = JOptionPane.showConfirmDialog(null, "Are you sure, you want to delete this invoice?",
+                        "Confirmation MESSAGE",  JOptionPane.OK_CANCEL_OPTION);
+                if(ret != JOptionPane.OK_OPTION)
+                    break;
+
                 InvoiceController.deleteInvoice(invoicesTableRowSelected);
 
                 invoiceNo.setText("");

@@ -96,10 +96,10 @@ public class InvoiceController {
             System.out.println("item No."+ itemSelected +" removed!");
         }
         try {
-            String brePath = "..\\InvoiceTables\\InvoiceHeader" + "\\" + "invoiceHeader";
-            String itemPath = brePath +"\\"+ InvoiceNum + ".csv";
+            String brePath = "..\\InvoiceTables\\InvoiceHeader" + "\\" + fileNameOfInvoices;
+            String itemPath = brePath.replace("invoiceHeader","invoiceLines");
 
-            items = FileOperations.readInvoiceLineFile(itemPath);
+            items = FileOperations.readInvoiceLineFile(itemPath, InvoiceNum);
         }catch (NullPointerException e){
             e.printStackTrace();
         }catch (Exception e){
@@ -115,8 +115,8 @@ public class InvoiceController {
         int newInvoiceNo = (int) invoicesModel.getValueAt(invoicesModel.invoiceList.size() - 1, 0) + 1;
 
         if(fileNameOfInvoices!=null) {
-            String brePath = invoiceDirectory + "\\" + fileNameOfInvoices.replace(".csv", "");
-            itemPath = brePath + "\\" + newInvoiceNo + ".csv";
+            String brePath = "..\\InvoiceTables\\InvoiceHeader" + "\\" + fileNameOfInvoices;
+            itemPath = brePath.replace("invoiceHeader","invoiceLines");
         }
         FileOperations.CreateFile(itemPath);
         InvoiceHeader inv = new InvoiceHeader(newInvoiceNo, "", "");

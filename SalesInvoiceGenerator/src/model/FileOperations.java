@@ -19,11 +19,11 @@ public class FileOperations {
                 String line = reader.readLine();
                 String[] dataCell = line.split(",");
                 InvoiceHeader inv = new InvoiceHeader(Integer.valueOf(dataCell[0]),
-                        dataCell[1],
-                        dataCell[2]);
-                String brePath = "..\\InvoiceTables\\InvoiceHeader" + "\\" + InvoiceController.getFileNameOfInvoices().replace(".csv","");
-                String itemPath = brePath +"\\"+ inv.getInvoiceNum()+ ".csv";
-                inv.setInvoiceLines(readInvoiceLineFile(itemPath));
+                                                    dataCell[1],
+                                                    dataCell[2]);
+                String brePath = "..\\InvoiceTables\\InvoiceHeader" + "\\" + InvoiceController.getFileNameOfInvoices();
+                String itemPath = brePath.replace("invoiceHeader","invoiceLines");
+                inv.setInvoiceLines(readInvoiceLineFile(itemPath, Integer.valueOf(dataCell[0])));
                 invoices.add(inv);
 
             }
@@ -71,6 +71,7 @@ public class FileOperations {
 
             byte[] b = data.getBytes();
             fos.write(b);
+            boolean flushItems = true;
 
 //            int itemLen;
             for(int i = 0; i< list.size(); i++){
@@ -78,10 +79,13 @@ public class FileOperations {
 //                itemLen = list.get(i).getInvoiceLines(k).size();
 
                 ArrayList<InvoiceLine> items = list.get(i).getInvoiceLines(k);
-                String brePath = "..\\InvoiceTables\\InvoiceHeader" + "\\" + InvoiceController.getFileNameOfInvoices().replace(".csv","");
-                String itemPath = brePath +"\\"+ k+ ".csv";
-                CreateFile(itemPath);
-                writeInvoiceLineFile(itemPath, items);
+//                String brePath = "..\\InvoiceTables\\InvoiceHeader" + "\\" + InvoiceController.getFileNameOfInvoices().replace(".csv","");
+//                String itemPath = brePath +"\\"+ k+ ".csv";
+                String brePath = "..\\InvoiceTables\\InvoiceHeader" + "\\" + InvoiceController.getFileNameOfInvoices();
+                String itemPath = brePath.replace("invoiceHeader","invoiceLines");
+                //CreateFile(itemPath);
+                writeInvoiceLineFile(itemPath, items, flushItems, (i==list.size()-1));
+                flushItems = false;
             }
 
         } catch (IndexOutOfBoundsException | IOException e){
@@ -94,7 +98,7 @@ public class FileOperations {
 
     }
 
-    public static ArrayList<InvoiceLine> readInvoiceLineFile(String path){
+    public static ArrayList<InvoiceLine> readInvoiceLineFile(String path, int invoiceNumber){
         ArrayList<InvoiceLine> items = new ArrayList<>();
 
         FileInputStream fis = null;
@@ -107,10 +111,12 @@ public class FileOperations {
             while(reader.ready()) {
                 String line = reader.readLine();
                 String[] dataCell = line.split(",");
-                items.add(new InvoiceLine(Integer.valueOf(dataCell[0]),
-                        dataCell[1],
-                        Double.parseDouble(dataCell[2]),
-                        Integer.valueOf(dataCell[3])));
+                if(invoiceNumber == Integer.valueOf(dataCell[0])) {
+                    items.add(new InvoiceLine(Integer.valueOf(dataCell[0]),
+                            dataCell[1],
+                            Double.parseDouble(dataCell[2]),
+                            Integer.valueOf(dataCell[3])));
+                }
             }
         } catch (NullPointerException | IOException e){
             e.printStackTrace();
@@ -124,11 +130,17 @@ public class FileOperations {
         return items;
     }
 
-    public static void writeInvoiceLineFile(String path, ArrayList<InvoiceLine> list){
+    public static void writeInvoiceLineFile(String path, ArrayList<InvoiceLine> list, boolean bFlush, boolean finalInvoice){
 
         FileOutputStream fos = null;
         try {
-            fos = new FileOutputStream(path);
+
+            if(bFlush) {
+                fos = new FileOutputStream(path);
+                fos.flush();
+            }
+            else
+                fos = new FileOutputStream(path, true);
 
             int nRow = list.size();
             int nCol = InvoiceLine.getParameterNames().length -1;
@@ -155,7 +167,8 @@ public class FileOperations {
 //                    if(j==nCol-1) data=data.replace("\r","");
                     if (j!=nCol-1) data += ",";
                 }
-                if(i!=nRow-1)data += "\r\n";
+                //if(i!=nRow-1)
+                    data += "\r\n";
             }
 
             byte[] b = data.getBytes();
