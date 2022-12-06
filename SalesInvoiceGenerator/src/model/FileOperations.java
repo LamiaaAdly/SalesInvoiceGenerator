@@ -202,17 +202,17 @@ public class FileOperations {
 
     public static String[] getPaths(Component context)
     {
-        String path =null;
-        String parentDirectory =null;
-        String fileName =null;
-        JFileChooser fc = new JFileChooser();
-        fc.setCurrentDirectory(new File("..\\InvoiceTables\\InvoiceHeader"));
-        int result = fc.showOpenDialog(context);
-        if(result == JFileChooser.APPROVE_OPTION) {
-            path = fc.getSelectedFile().getPath();
-            parentDirectory = fc.getSelectedFile().getParent();
-            fileName = fc.getSelectedFile().getName();
-        }
+        String path ="..\\InvoiceTables\\InvoiceHeader\\invoiceHeader.csv";
+        String parentDirectory ="..\\InvoiceTables\\InvoiceHeader";
+        String fileName ="invoiceHeader.csv";
+//        JFileChooser fc = new JFileChooser();
+//        fc.setCurrentDirectory(new File("..\\InvoiceTables\\InvoiceHeader"));
+//        int result = fc.showOpenDialog(context);
+//        if(result == JFileChooser.APPROVE_OPTION) {
+//            path = fc.getSelectedFile().getPath();
+//            parentDirectory = fc.getSelectedFile().getParent();
+//            fileName = fc.getSelectedFile().getName();
+//        }
         return new String[] {path, parentDirectory, fileName};
     }
 

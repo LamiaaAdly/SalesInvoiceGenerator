@@ -65,18 +65,18 @@ public class InvoiceController {
         }
     }
     public static void saveFile(ArrayList<InvoiceHeader> invoicesData, Component context){
-        String path =null;
-        JFileChooser fc = new JFileChooser();
-        fc.setCurrentDirectory(new File("..\\InvoiceTables\\InvoiceHeader"));
+        String path ="..\\InvoiceTables\\InvoiceHeader\\invoiceHeader.csv";
+//        JFileChooser fc = new JFileChooser();
+//        fc.setCurrentDirectory(new File("..\\InvoiceTables\\InvoiceHeader"));
         try {
-            int result = fc.showSaveDialog(context);
-            if(result == JFileChooser.APPROVE_OPTION){
-                path = fc.getSelectedFile().getPath();
+//            int result = fc.showSaveDialog(context);
+//            if(result == JFileChooser.APPROVE_OPTION){
+//                path = fc.getSelectedFile().getPath();
                 if(invoicesData!=null) {
                     FileOperations.writeFile(path, invoicesData);
                 }
-            }
-        }catch (HeadlessException e){
+//            }
+        }catch (Exception e){
             e.printStackTrace();
         }finally {
             String invoPath = invoiceDirectory + "\\" +fileNameOfInvoices;
