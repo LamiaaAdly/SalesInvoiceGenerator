@@ -28,7 +28,7 @@ public class SalesInvoiceUI extends JFrame implements ActionListener {
     private String[] invoicesTableHeaders;
     private String[] invoiceItemsHeaders;
     private int invoicesTableRowSelected, itemSelected;
-    private String invoicePath, invoiceDirectory, fileNameOfInvoices;
+    private String invoicePath, fileNameOfInvoices;
     private String itemPath;
     private ArrayList<InvoiceHeader> invoices;
     private ArrayList<InvoiceLine> items;
@@ -73,12 +73,12 @@ public class SalesInvoiceUI extends JFrame implements ActionListener {
 
         String[] paths = FileOperations.getPaths(this);
         invoicePath = paths[0];
-        invoiceDirectory = paths[1];
-        fileNameOfInvoices = paths[2];
+//        invoiceDirectory = paths[1];
+        fileNameOfInvoices = paths[1];
 
         InvoiceController.setInvoicePath(paths[0]);
-        InvoiceController.setInvoiceDirectory(paths[1]);
-        InvoiceController.setFileNameOfInvoices(paths[2]);
+//        InvoiceController.setInvoiceDirectory(paths[1]);
+        InvoiceController.setFileNameOfInvoices(paths[1]);
 
         invoices = FileOperations.readFile(invoicePath);
         FileOperations.test();

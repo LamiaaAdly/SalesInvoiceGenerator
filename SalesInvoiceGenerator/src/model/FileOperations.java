@@ -21,8 +21,8 @@ public class FileOperations {
                 InvoiceHeader inv = new InvoiceHeader(Integer.valueOf(dataCell[0]),
                                                     dataCell[1],
                                                     dataCell[2]);
-                String brePath = "..\\InvoiceTables\\InvoiceHeader" + "\\" + InvoiceController.getFileNameOfInvoices();
-                String itemPath = brePath.replace("invoiceHeader","invoiceLines");
+//                String brePath = "..\\InvoiceTables\\InvoiceHeader" + "\\" + InvoiceController.getFileNameOfInvoices();
+                String itemPath = ".\\invoiceLines.csv";
                 inv.setInvoiceLines(readInvoiceLineFile(itemPath, Integer.valueOf(dataCell[0])));
                 invoices.add(inv);
 
@@ -81,8 +81,9 @@ public class FileOperations {
                 ArrayList<InvoiceLine> items = list.get(i).getInvoiceLines(k);
 //                String brePath = "..\\InvoiceTables\\InvoiceHeader" + "\\" + InvoiceController.getFileNameOfInvoices().replace(".csv","");
 //                String itemPath = brePath +"\\"+ k+ ".csv";
-                String brePath = "..\\InvoiceTables\\InvoiceHeader" + "\\" + InvoiceController.getFileNameOfInvoices();
-                String itemPath = brePath.replace("invoiceHeader","invoiceLines");
+//                String brePath = InvoiceController.getInvoicePath();
+//                String itemPath = brePath.replace("invoiceHeader","invoiceLines");
+                String itemPath = ".\\invoiceLines.csv";
                 //CreateFile(itemPath);
                 writeInvoiceLineFile(itemPath, items, flushItems, (i==list.size()-1));
                 flushItems = false;
@@ -202,8 +203,8 @@ public class FileOperations {
 
     public static String[] getPaths(Component context)
     {
-        String path ="..\\InvoiceTables\\InvoiceHeader\\invoiceHeader.csv";
-        String parentDirectory ="..\\InvoiceTables\\InvoiceHeader";
+        String path =".\\invoiceHeader.csv";
+//        String parentDirectory ="..\\InvoiceTables\\InvoiceHeader";
         String fileName ="invoiceHeader.csv";
 //        JFileChooser fc = new JFileChooser();
 //        fc.setCurrentDirectory(new File("..\\InvoiceTables\\InvoiceHeader"));
@@ -213,7 +214,7 @@ public class FileOperations {
 //            parentDirectory = fc.getSelectedFile().getParent();
 //            fileName = fc.getSelectedFile().getName();
 //        }
-        return new String[] {path, parentDirectory, fileName};
+        return new String[] {path, fileName};
     }
 
     public static void test() {

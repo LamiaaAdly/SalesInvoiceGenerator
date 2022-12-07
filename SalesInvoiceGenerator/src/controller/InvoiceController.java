@@ -51,8 +51,8 @@ public class InvoiceController {
 
         String paths[] = FileOperations.getPaths(view);
         setInvoicePath(paths[0]);
-        setInvoiceDirectory(paths[1]);
-        setFileNameOfInvoices(paths[2]);
+//        setInvoiceDirectory(paths[1]);
+        setFileNameOfInvoices(paths[1]);
 
         invoices = FileOperations.readFile(invoicePath);
 
@@ -65,7 +65,8 @@ public class InvoiceController {
         }
     }
     public static void saveFile(ArrayList<InvoiceHeader> invoicesData, Component context){
-        String path ="..\\InvoiceTables\\InvoiceHeader\\invoiceHeader.csv";
+        String path =".\\invoiceHeader.csv";
+//                "..\\InvoiceTables\\InvoiceHeader\\invoiceHeader.csv";
 //        JFileChooser fc = new JFileChooser();
 //        fc.setCurrentDirectory(new File("..\\InvoiceTables\\InvoiceHeader"));
         try {
@@ -79,7 +80,7 @@ public class InvoiceController {
         }catch (Exception e){
             e.printStackTrace();
         }finally {
-            String invoPath = invoiceDirectory + "\\" +fileNameOfInvoices;
+            String invoPath = ".\\invoiceHeader.csv";
             FileOperations.readFile(invoPath);
         }
     }
@@ -96,8 +97,8 @@ public class InvoiceController {
             System.out.println("item No."+ itemSelected +" removed!");
         }
         try {
-            String brePath = "..\\InvoiceTables\\InvoiceHeader" + "\\" + fileNameOfInvoices;
-            String itemPath = brePath.replace("invoiceHeader","invoiceLines");
+//            String brePath = "..\\InvoiceTables\\InvoiceHeader" + "\\" + fileNameOfInvoices;
+            String itemPath = ".\\invoiceLines.csv";
 
             items = FileOperations.readInvoiceLineFile(itemPath, InvoiceNum);
         }catch (NullPointerException e){
@@ -115,8 +116,9 @@ public class InvoiceController {
         int newInvoiceNo = (int) invoicesModel.getValueAt(invoicesModel.invoiceList.size() - 1, 0) + 1;
 
         if(fileNameOfInvoices!=null) {
-            String brePath = "..\\InvoiceTables\\InvoiceHeader" + "\\" + fileNameOfInvoices;
-            itemPath = brePath.replace("invoiceHeader","invoiceLines");
+//            String brePath = "..\\InvoiceTables\\InvoiceHeader" + "\\" + fileNameOfInvoices;
+            itemPath = ".\\invoiceLines.csv";
+//            brePath.replace("invoiceHeader","invoiceLines");
         }
         FileOperations.CreateFile(itemPath);
         InvoiceHeader inv = new InvoiceHeader(newInvoiceNo, "", "");
