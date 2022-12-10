@@ -47,22 +47,22 @@ public class InvoiceController {
         InvoiceController.fileNameOfInvoices = fileNameOfInvoices;
     }
 
-    public static void loadFile(JTable invoicesTable){
+    public static InvoiceHeaderModel loadFile(JTable invoicesTable){
+        ArrayList<InvoiceHeader> loadedInvoices;
+        InvoiceHeaderModel loadedInvoicesModel;
+        String paths[] = FileOperations.getPaths();
+        invoicePath = paths[0];
 
-        String paths[] = FileOperations.getPaths(view);
-        setInvoicePath(paths[0]);
-//        setInvoiceDirectory(paths[1]);
-        setFileNameOfInvoices(paths[1]);
+        loadedInvoices = FileOperations.readFile(invoicePath);
 
-        invoices = FileOperations.readFile(invoicePath);
-
-        invoicesModel =new InvoiceHeaderModel(invoices, InvoiceHeader.getParameterNames());
-        invoicesTable.setModel(invoicesModel);
-        for (int i = 0; i < invoicesModel.invoiceList.size();i++)
+        loadedInvoicesModel =new InvoiceHeaderModel(loadedInvoices, InvoiceHeader.getParameterNames());
+        invoicesTable.setModel(loadedInvoicesModel);
+        for (int i = 0; i < loadedInvoicesModel.invoiceList.size();i++)
         {
-            InvoiceHeader inv = invoicesModel.invoiceList.get(i);
+            InvoiceHeader inv = loadedInvoicesModel.invoiceList.get(i);
             inv.getInvoiceLines(inv.getInvoiceNum());
         }
+        return loadedInvoicesModel;
     }
     public static void saveFile(ArrayList<InvoiceHeader> invoicesData, Component context){
         String path =".\\invoiceHeader.csv";
@@ -85,12 +85,12 @@ public class InvoiceController {
         }
     }
     // was "saveChanges" and updates to be "createItem"
-    public static void createItem(int invoiceNum){
+    public static void createItem(InvoiceLineModel invoiceLineModel,int invoiceNum){
         invoiceLineModel.itemList.add(new InvoiceLine(invoiceNum,"", 0.0, 0));
         invoiceLineModel.fireTableStructureChanged();
     }
     // was "cancelChanges" and updates to be "deleteItem"
-    public static void deleteItem(int InvoiceNum,int itemSelected){
+    public static void deleteItem(int InvoiceNum,int itemSelected,InvoiceLineModel invoiceLineModel){
 
         if(itemSelected >= 0) {
             invoiceLineModel.itemList.remove(itemSelected);
@@ -108,32 +108,28 @@ public class InvoiceController {
         }
     }
 
-    public static void createInvoice(JTable invoicesTable,int invoicesTableRowSelected){
-
-        if(invoicesTable.isRowSelected(invoicesTableRowSelected)) {
-            invoicesTable.clearSelection();
-        }
-        int newInvoiceNo = (int) invoicesModel.getValueAt(invoicesModel.invoiceList.size() - 1, 0) + 1;
+    public static void createInvoice(InvoiceHeaderModel invoicesModel, int newInvoiceNo){
+//        int newInvoiceNo = (int) invoicesModel.getValueAt(invoicesModel.invoiceList.size() - 1, 0) + 1;
 
         if(fileNameOfInvoices!=null) {
 //            String brePath = "..\\InvoiceTables\\InvoiceHeader" + "\\" + fileNameOfInvoices;
             itemPath = ".\\invoiceLines.csv";
 //            brePath.replace("invoiceHeader","invoiceLines");
         }
-        FileOperations.CreateFile(itemPath);
+//        FileOperations.CreateFile(itemPath);
         InvoiceHeader inv = new InvoiceHeader(newInvoiceNo, "", "");
         inv.setInvoiceLines(new ArrayList<>());
         invoicesModel.invoiceList.add(inv);
         invoicesModel.fireTableStructureChanged();
     }
-    public static void deleteInvoice(int invoicesTableRowSelected){
+    public static void deleteInvoice(int invoicesTableRowSelected, InvoiceHeaderModel invoicesModel){
         if(invoicesTableRowSelected >= 0) {
             invoicesModel.invoiceList.remove(invoicesTableRowSelected);
             invoicesModel.fireTableStructureChanged();
             //System.out.println(fileNameOfInvoices+" file removed!");
         }
     }
-    public static void updateItemsModel(int invoicesTableRowSelected){
-
-    }
+//    public static void updateItemsModel(int invoicesTableRowSelected){
+//
+//    }
 }

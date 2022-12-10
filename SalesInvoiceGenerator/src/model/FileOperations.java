@@ -105,7 +105,7 @@ public class FileOperations {
         FileInputStream fis = null;
         try {
             if(path== null){
-                path= InvoiceController.getInvoicePath();
+                path= FileOperations.getPaths()[0];
             }
             fis= new FileInputStream(path);
             BufferedReader reader = new BufferedReader(new InputStreamReader(fis) );
@@ -185,23 +185,23 @@ public class FileOperations {
 
     }
 
-    public static void CreateFile(String path) {
-        try {
-            File file = new File(path);
-            if (file.createNewFile()) {
-                System.out.println("File created: " + file.getName());
-            } else {
-                System.out.println("File already exists.");
-            }
-        }catch (NullPointerException | FileNotFoundException e){
-            e.printStackTrace();
-        } catch (IOException e) {
-            System.out.println("An error occurred.");
-            e.printStackTrace();
-        }
-    }
+//    public static void CreateFile(String path) {
+//        try {
+//            File file = new File(path);
+//            if (file.createNewFile()) {
+//                System.out.println("File created: " + file.getName());
+//            } else {
+//                System.out.println("File already exists.");
+//            }
+//        }catch (NullPointerException | FileNotFoundException e){
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            System.out.println("An error occurred.");
+//            e.printStackTrace();
+//        }
+//    }
 
-    public static String[] getPaths(Component context)
+    public static String[] getPaths()
     {
         String path =".\\invoiceHeader.csv";
 //        String parentDirectory ="..\\InvoiceTables\\InvoiceHeader";
@@ -219,7 +219,7 @@ public class FileOperations {
 
     public static void test() {
         try {
-            ArrayList<InvoiceHeader> invoiceList = readFile(InvoiceController.getInvoicePath());
+            ArrayList<InvoiceHeader> invoiceList = readFile(FileOperations.getPaths()[0]);
             for (int i = 0; i < invoiceList.size(); i++) {
                 int invoNo = invoiceList.get(i).getInvoiceNum();
                 System.out.println("Invoice" + invoNo+ "Num\n{");
